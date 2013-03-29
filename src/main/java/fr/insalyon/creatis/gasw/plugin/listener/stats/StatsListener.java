@@ -44,6 +44,7 @@ import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.StatsDAO;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOException;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOFactory;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 import org.apache.log4j.Logger;
@@ -91,9 +92,6 @@ public class StatsListener implements ListenerPlugin {
         try {
             Job job = StatsPluginDAOFactory.getInstance().getJobDAO().getByFilenameAndExitCode(
                     gaswOutput.getJobID().replace(".jdl", ""), gaswOutput.getExitCode());
-            if (job == null) {
-                logger.error("JOB IS NULL: " + gaswOutput.getJobID() + " - " + gaswOutput.getExitCode());
-            }
             Stats stats = statsDAO.get(job.getSimulationID());
 
             boolean exists = true;
@@ -131,13 +129,19 @@ public class StatsListener implements ListenerPlugin {
 
         try {
             WorkflowsDBDAOFactory.getInstance().close();
-            
+
         } catch (WorkflowsDBDAOException ex) {
             logger.error(ex);
             throw new GaswException(ex);
         }
     }
 
+    /**
+     * Parses the status of the job and sets its times.
+     *
+     * @param job Job object
+     * @param stats Stats object
+     */
     private void parseStatus(Job job, Stats stats) {
 
         switch (job.getStatus()) {
@@ -158,19 +162,19 @@ public class StatsListener implements ListenerPlugin {
 
             case CANCELLED:
                 stats.setCancelled(stats.getCancelled() + 1);
-                if (job.getQueued() != null && job.getDownload() != null) {
+                if (job.getQueued() != null) {
                     stats.setCancelledWaitingTime(stats.getCancelledWaitingTime()
-                            + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
+                            + getTime(job.getQueued(), job.getDownload(), job.getEnd()));
                 }
-                if (job.getDownload() != null && job.getRunning() != null) {
+                if (job.getDownload() != null) {
                     stats.setCancelledInputTime(stats.getCancelledInputTime()
-                            + (job.getRunning().getTime() - job.getDownload().getTime()) / 1000);
+                            + getTime(job.getDownload(), job.getRunning(), job.getEnd()));
                 }
-                if (job.getRunning() != null && job.getUpload() != null) {
+                if (job.getRunning() != null) {
                     stats.setCancelledExecutionTime(stats.getCancelledExecutionTime()
-                            + (job.getUpload().getTime() - job.getRunning().getTime()) / 1000);
+                            + getTime(job.getRunning(), job.getUpload(), job.getEnd()));
                 }
-                if (job.getUpload() != null && job.getEnd() != null) {
+                if (job.getUpload() != null) {
                     stats.setCancelledOutputTime(stats.getCancelledOutputTime()
                             + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                 }
@@ -178,19 +182,19 @@ public class StatsListener implements ListenerPlugin {
 
             case STALLED:
                 stats.setFailedStalled(stats.getFailedStalled() + 1);
-                if (job.getQueued() != null && job.getDownload() != null) {
+                if (job.getQueued() != null) {
                     stats.setFailedStalledWaitingTime(stats.getFailedStalledWaitingTime()
-                            + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
+                            + getTime(job.getQueued(), job.getDownload(), job.getEnd()));
                 }
-                if (job.getDownload() != null && job.getRunning() != null) {
+                if (job.getDownload() != null) {
                     stats.setFailedStalledInputTime(stats.getFailedStalledInputTime()
-                            + (job.getRunning().getTime() - job.getDownload().getTime()) / 1000);
+                            + getTime(job.getDownload(), job.getRunning(), job.getEnd()));
                 }
-                if (job.getRunning() != null && job.getUpload() != null) {
+                if (job.getRunning() != null) {
                     stats.setFailedStalledExecutionTime(stats.getFailedStalledExecutionTime()
-                            + (job.getUpload().getTime() - job.getRunning().getTime()) / 1000);
+                            + getTime(job.getRunning(), job.getUpload(), job.getEnd()));
                 }
-                if (job.getUpload() != null && job.getEnd() != null) {
+                if (job.getUpload() != null) {
                     stats.setFailedStalledOutputTime(stats.getFailedStalledOutputTime()
                             + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                 }
@@ -199,65 +203,80 @@ public class StatsListener implements ListenerPlugin {
             case ERROR:
 
                 switch (job.getExitCode()) {
+                    // Inputs Error
                     case 1:
                         stats.setFailedInput(stats.getFailedInput() + 1);
-                        if (job.getQueued() != null && job.getDownload() != null) {
+                        if (job.getQueued() != null) {
                             stats.setFailedInputWaitingTime(stats.getFailedInputWaitingTime()
-                                    + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
+                                    + getTime(job.getQueued(), job.getDownload(), job.getEnd()));
                         }
-                        if (job.getDownload() != null && job.getRunning() != null) {
+                        if (job.getDownload() != null) {
                             stats.setFailedInputInputTime(stats.getFailedInputInputTime()
-                                    + (job.getRunning().getTime() - job.getDownload().getTime()) / 1000);
+                                    + getTime(job.getDownload(), job.getRunning(), job.getEnd()));
                         }
-                        if (job.getRunning() != null && job.getUpload() != null) {
+                        if (job.getRunning() != null) {
                             stats.setFailedInputExecutionTime(stats.getFailedInputExecutionTime()
-                                    + (job.getUpload().getTime() - job.getRunning().getTime()) / 1000);
+                                    + getTime(job.getRunning(), job.getUpload(), job.getEnd()));
                         }
-                        if (job.getUpload() != null && job.getEnd() != null) {
+                        if (job.getUpload() != null) {
                             stats.setFailedInputOutputTime(stats.getFailedInputOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
                         break;
 
+                    // Outputs Error
                     case 2:
                         stats.setFailedOutput(stats.getFailedOutput() + 1);
-                        if (job.getQueued() != null && job.getDownload() != null) {
+                        if (job.getQueued() != null) {
                             stats.setFailedOutputWaitingTime(stats.getFailedOutputWaitingTime()
-                                    + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
+                                    + getTime(job.getQueued(), job.getDownload(), job.getEnd()));
                         }
-                        if (job.getDownload() != null && job.getRunning() != null) {
+                        if (job.getDownload() != null) {
                             stats.setFailedOutputInputTime(stats.getFailedOutputInputTime()
-                                    + (job.getRunning().getTime() - job.getDownload().getTime()) / 1000);
+                                    + getTime(job.getDownload(), job.getRunning(), job.getEnd()));
                         }
-                        if (job.getRunning() != null && job.getUpload() != null) {
+                        if (job.getRunning() != null) {
                             stats.setFailedOutputExecutionTime(stats.getFailedOutputExecutionTime()
-                                    + (job.getUpload().getTime() - job.getRunning().getTime()) / 1000);
+                                    + getTime(job.getRunning(), job.getUpload(), job.getEnd()));
                         }
-                        if (job.getUpload() != null && job.getEnd() != null) {
+                        if (job.getUpload() != null) {
                             stats.setFailedOutputOutputTime(stats.getFailedOutputOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
                         break;
 
+                    // Application Error
                     case 6:
                         stats.setFailedApplication(stats.getFailedApplication() + 1);
-                        if (job.getQueued() != null && job.getDownload() != null) {
+                        if (job.getQueued() != null) {
                             stats.setFailedApplicationWaitingTime(stats.getFailedApplicationWaitingTime()
-                                    + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
+                                    + getTime(job.getQueued(), job.getDownload(), job.getEnd()));
                         }
-                        if (job.getDownload() != null && job.getRunning() != null) {
+                        if (job.getDownload() != null) {
                             stats.setFailedApplicationInputTime(stats.getFailedApplicationInputTime()
-                                    + (job.getRunning().getTime() - job.getDownload().getTime()) / 1000);
+                                    + getTime(job.getDownload(), job.getRunning(), job.getEnd()));
                         }
-                        if (job.getRunning() != null && job.getUpload() != null) {
+                        if (job.getRunning() != null) {
                             stats.setFailedApplicationExecutionTime(stats.getFailedApplicationExecutionTime()
-                                    + (job.getUpload().getTime() - job.getRunning().getTime()) / 1000);
+                                    + getTime(job.getRunning(), job.getUpload(), job.getEnd()));
                         }
-                        if (job.getUpload() != null && job.getEnd() != null) {
+                        if (job.getUpload() != null) {
                             stats.setFailedApplicationOutputTime(stats.getFailedApplicationOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
                 }
         }
+    }
+
+    /**
+     *
+     * @param endTime
+     * @param finalTime
+     * @return
+     */
+    private long getTime(Date initialTime, Date endTime, Date finalTime) {
+
+        return ((endTime != null ? endTime.getTime() : finalTime.getTime())
+                - initialTime.getTime()) / 1000;
     }
 }
