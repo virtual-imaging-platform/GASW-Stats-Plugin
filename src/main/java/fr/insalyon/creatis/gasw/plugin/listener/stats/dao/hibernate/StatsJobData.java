@@ -42,6 +42,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 
+import java.util.List;
+
 /**
  *
  * @author Rafael Ferreira da Silva
@@ -56,7 +58,7 @@ public class StatsJobData implements StatsJobDAO {
     }
 
     @Override
-    public Job getByFilenameAndExitCode(String fileName, GaswExitCode exitCode) throws DAOException {
+    public List<Job> getByFilenameAndExitCode(String fileName, GaswExitCode exitCode) throws DAOException {
 
         try {
             Session session = sessionFactory.openSession();
@@ -64,11 +66,11 @@ public class StatsJobData implements StatsJobDAO {
             Criteria criteria = session.createCriteria(Job.class);
             criteria.add(Restrictions.eq("fileName", fileName));
             criteria.add(Restrictions.eq("exitCode", exitCode.getExitCode()));
-            Job job = (Job) criteria.uniqueResult();
+            List<Job> jobs = criteria.list();
             session.getTransaction().commit();
             session.close();
 
-            return job;
+            return jobs;
 
         } catch (HibernateException ex) {
             throw new DAOException(ex);
