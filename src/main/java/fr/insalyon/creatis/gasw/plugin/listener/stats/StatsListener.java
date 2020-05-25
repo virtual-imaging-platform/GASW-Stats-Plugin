@@ -43,9 +43,9 @@ import fr.insalyon.creatis.moteur.plugins.workflowsdb.bean.Stats;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.StatsDAO;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOException;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOFactory;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
+import java.util.*;
+
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 import org.apache.log4j.Logger;
 
@@ -90,8 +90,9 @@ public class StatsListener implements ListenerPlugin {
     public synchronized void jobFinished(GaswOutput gaswOutput) throws GaswException {
 
         try {
-            Job job = StatsPluginDAOFactory.getInstance().getJobDAO().getByFilenameAndExitCode(
+            List<Job> jobs = StatsPluginDAOFactory.getInstance().getJobDAO().getByFilenameAndExitCode(
                     gaswOutput.getJobID().replace(".jdl", ""), gaswOutput.getExitCode());
+            Job job = selectLastjob(jobs);
             Stats stats = statsDAO.get(job.getSimulationID());
 
             boolean exists = true;
@@ -133,6 +134,21 @@ public class StatsListener implements ListenerPlugin {
         } catch (WorkflowsDBDAOException ex) {
             logger.error(ex);
             throw new GaswException(ex);
+        }
+    }
+
+    private Job selectLastjob(List<Job> jobs) throws GaswException {
+        if (jobs.size() == 1) {
+            return jobs.get(0);
+        } else if (jobs.stream().anyMatch(j -> j.getEnd() == null)) {
+            logger.error("[GASW Stats] Cannot select job for " +
+                    jobs.get(0).getSimulationID() + " because one of them " +
+                    "does not have an end date");
+            throw new GaswException("[GASW Stats] Cannot select job for " +
+                    jobs.get(0).getSimulationID() + " because one of them " +
+                    "does not have an end date");
+        } else {
+            return jobs.stream().max(Comparator.comparing(Job::getEnd)).get();
         }
     }
 
