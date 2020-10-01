@@ -58,6 +58,7 @@ public class StatsListener implements ListenerPlugin {
 
     private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
     private StatsDAO statsDAO;
+    private WorkflowsDBDAOFactory workflowsDBDAOFactory;
 
     @Override
     public String getPluginName() {
@@ -74,7 +75,8 @@ public class StatsListener implements ListenerPlugin {
 
         try {
             logger.info("Loading Workflow Stats GASW Plugin");
-            statsDAO = WorkflowsDBDAOFactory.getInstance().getStatsDAO();
+            workflowsDBDAOFactory = new WorkflowsDBDAOFactory();
+            statsDAO = workflowsDBDAOFactory.getStatsDAO();
 
         } catch (WorkflowsDBDAOException ex) {
             logger.error(ex);
@@ -126,15 +128,8 @@ public class StatsListener implements ListenerPlugin {
     }
 
     @Override
-    public void terminate() throws GaswException {
-
-        try {
-            WorkflowsDBDAOFactory.getInstance().close();
-
-        } catch (WorkflowsDBDAOException ex) {
-            logger.error(ex);
-            throw new GaswException(ex);
-        }
+    public void terminate() {
+        workflowsDBDAOFactory.close();
     }
 
     private Job selectLastjob(List<Job> jobs) throws GaswException {
