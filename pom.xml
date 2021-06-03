@@ -59,7 +59,7 @@
         </dependency>
         
         <!-- to avoid jar duplication and classpath issues,
-         workflows-db-common and the mysql connector should be provided
+         workflows-db-common and the mariadb connector should be provided
          in the moteur2/gasw execution context, either by another
          plugin (moteur2-workflowsdb-plugin) or by moteur2 installed jars -->
         <dependency>
@@ -68,13 +68,14 @@
             <version>1.4</version>
             <scope>provided</scope>
         </dependency>
-        
+
+        <!-- See previous comment, this is needed at runtime but already
+        provided elsewhere in the moteur2/gasw context
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.23</version>
-            <scope>provided</scope>
-        </dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>2.1.2</version>
+        </dependency-->
 
     </dependencies>
 
