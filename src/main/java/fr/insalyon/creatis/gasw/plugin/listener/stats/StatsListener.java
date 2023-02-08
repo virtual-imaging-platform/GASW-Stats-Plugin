@@ -172,6 +172,7 @@ public class StatsListener implements ListenerPlugin {
                 break;
 
             case CANCELLED:
+            case DELETED:
                 stats.setCancelled(stats.getCancelled() + 1);
                 if (job.getQueued() != null) {
                     stats.setCancelledWaitingTime(stats.getCancelledWaitingTime()
