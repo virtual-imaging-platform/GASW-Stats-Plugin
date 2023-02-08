@@ -4,7 +4,7 @@
 
     <groupId>fr.insalyon.creatis</groupId>
     <artifactId>gasw-stats-plugin</artifactId>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.4.1</version>
     <packaging>jar</packaging>
 
     <name>GASW-Stats-Plugin</name>
@@ -15,7 +15,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-        <gasw-version>3.8.0-SNAPSHOT</gasw-version>
+        <gasw-version>3.8.0</gasw-version>
     </properties>
 
     <build>
