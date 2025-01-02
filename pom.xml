@@ -12,9 +12,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <gasw-version>3.8.0</gasw-version>
     </properties>
 
@@ -67,7 +66,7 @@
         <dependency>
             <groupId>fr.insalyon.creatis</groupId>
             <artifactId>moteur2-workflowsdb-common</artifactId>
-            <version>1.4</version>
+            <version>1.8.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
