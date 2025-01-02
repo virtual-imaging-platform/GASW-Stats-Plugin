@@ -39,6 +39,7 @@ import fr.insalyon.creatis.gasw.bean.JobMinorStatus;
 import fr.insalyon.creatis.gasw.dao.DAOException;
 import fr.insalyon.creatis.gasw.plugin.ListenerPlugin;
 import fr.insalyon.creatis.gasw.plugin.listener.stats.dao.StatsPluginDAOFactory;
+import fr.insalyon.creatis.moteur.plugins.workflowsdb.WorkflowsDBException;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.bean.Stats;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.StatsDAO;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOException;
@@ -78,7 +79,7 @@ public class StatsListener implements ListenerPlugin {
             workflowsDBDAOFactory = new WorkflowsDBDAOFactory();
             statsDAO = workflowsDBDAOFactory.getStatsDAO();
 
-        } catch (WorkflowsDBDAOException ex) {
+        } catch (WorkflowsDBDAOException | WorkflowsDBException ex) {
             logger.error(ex);
             throw new GaswException(ex);
         }
