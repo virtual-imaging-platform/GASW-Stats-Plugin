@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <gasw-version>3.8.0</gasw-version>
+        <gasw-version>3.12.0-SNAPSHOT</gasw-version>
     </properties>
 
     <build>
