@@ -4,7 +4,7 @@
 
     <groupId>fr.insalyon.creatis</groupId>
     <artifactId>gasw-stats-plugin</artifactId>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>4.0</version>
     <packaging>jar</packaging>
 
     <name>GASW-Stats-Plugin</name>
@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <gasw-version>3.12.0-SNAPSHOT</gasw-version>
+        <gasw-version>4.0</gasw-version>
     </properties>
 
     <build>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>fr.insalyon.creatis</groupId>
             <artifactId>moteur2-workflowsdb-common</artifactId>
-            <version>1.8.0-SNAPSHOT</version>
+            <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
 
