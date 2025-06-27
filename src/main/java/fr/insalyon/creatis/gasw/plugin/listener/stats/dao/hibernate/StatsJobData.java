@@ -36,12 +36,17 @@ import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.dao.DAOException;
 import fr.insalyon.creatis.gasw.plugin.listener.stats.dao.StatsJobDAO;
-import org.hibernate.Criteria;
+
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,16 +65,22 @@ public class StatsJobData implements StatsJobDAO {
     @Override
     public List<Job> getByFilenameAndExitCode(String fileName, GaswExitCode exitCode) throws DAOException {
 
-        try {
-            Session session = sessionFactory.openSession();
+        try (Session session = sessionFactory.openSession()){
             session.beginTransaction();
-            Criteria criteria = session.createCriteria(Job.class);
-            criteria.add(Restrictions.eq("fileName", fileName));
-            criteria.add(Restrictions.eq("exitCode", exitCode.getExitCode()));
-            List<Job> jobs = criteria.list();
-            session.getTransaction().commit();
-            session.close();
 
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Job> criteriaQuery = criteriaBuilder.createQuery(Job.class);
+            Root<Job> root = criteriaQuery.from(Job.class);
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(criteriaBuilder.equal(root.get("fileName"), fileName));
+            predicates.add(criteriaBuilder.equal(root.get("exitCode"), exitCode.getExitCode()));
+
+            criteriaQuery.where(predicates.toArray(new Predicate[0]));
+
+            List<Job> jobs = session.createQuery(criteriaQuery).list();
+
+            session.getTransaction().commit();
             return jobs;
 
         } catch (HibernateException ex) {
