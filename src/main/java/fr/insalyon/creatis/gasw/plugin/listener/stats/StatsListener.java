@@ -47,17 +47,15 @@ import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOFactory;
 
 import java.util.*;
 
-import net.xeoh.plugins.base.annotations.PluginImplementation;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
+import net.xeoh.plugins.base.annotations.PluginImplementation;
+
 @PluginImplementation
 public class StatsListener implements ListenerPlugin {
 
-    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
+    private static final Logger logger = LoggerFactory.getLogger(StatsListener.class);
     private StatsDAO statsDAO;
     private WorkflowsDBDAOFactory workflowsDBDAOFactory;
 
@@ -80,7 +78,7 @@ public class StatsListener implements ListenerPlugin {
             statsDAO = workflowsDBDAOFactory.getStatsDAO();
 
         } catch (WorkflowsDBDAOException | WorkflowsDBException ex) {
-            logger.error(ex);
+            logger.error("Error", ex);
             throw new GaswException(ex);
         }
     }
@@ -115,7 +113,7 @@ public class StatsListener implements ListenerPlugin {
         } catch (DAOException ex) {
             throw new GaswException(ex);
         } catch (WorkflowsDBDAOException ex) {
-            logger.error(ex);
+            logger.error("Error", ex);
             throw new GaswException(ex);
         }
     }
@@ -137,10 +135,9 @@ public class StatsListener implements ListenerPlugin {
         if (jobs.size() == 1) {
             return jobs.get(0);
         } else if (jobs.stream().anyMatch(j -> j.getEnd() == null)) {
-            logger.error("[GASW Stats] Cannot select job for " +
-                    jobs.get(0).getSimulationID() + " because one of them " +
-                    "does not have an end date");
-            throw new GaswException("[GASW Stats] Cannot select job for " +
+            logger.error("Cannot select job for {} because one of them " +
+                    "does not have an end date", jobs.get(0).getSimulationID());
+            throw new GaswException("Cannot select job for " +
                     jobs.get(0).getSimulationID() + " because one of them " +
                     "does not have an end date");
         } else {
@@ -281,12 +278,6 @@ public class StatsListener implements ListenerPlugin {
         }
     }
 
-    /**
-     *
-     * @param endTime
-     * @param finalTime
-     * @return
-     */
     private long getTime(Date initialTime, Date endTime, Date finalTime) {
 
         return ((endTime != null ? endTime.getTime() : finalTime.getTime())

@@ -49,16 +49,11 @@ import org.hibernate.SessionFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
 public class StatsJobData implements StatsJobDAO {
 
     private SessionFactory sessionFactory;
 
     public StatsJobData(SessionFactory sessionFactory) {
-
         this.sessionFactory = sessionFactory;
     }
 
