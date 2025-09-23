@@ -33,10 +33,6 @@
 
 package fr.insalyon.creatis.gasw.plugin.listener.stats;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
 public class StatsConstants {
 
     public final static String NAME = "Workflow Stats";
