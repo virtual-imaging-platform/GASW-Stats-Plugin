@@ -36,16 +36,11 @@ import fr.insalyon.creatis.gasw.dao.DAOException;
 import fr.insalyon.creatis.gasw.dao.HibernateDAOFactory;
 import fr.insalyon.creatis.gasw.plugin.listener.stats.dao.hibernate.StatsJobData;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
 public class StatsPluginDAOFactory {
 
     private static StatsPluginDAOFactory instance;
 
     public static StatsPluginDAOFactory getInstance() throws DAOException {
-
         if (instance == null) {
             instance = new StatsPluginDAOFactory();
         }
@@ -53,8 +48,7 @@ public class StatsPluginDAOFactory {
         return instance;
     }
 
-    private StatsPluginDAOFactory() {
-    }
+    private StatsPluginDAOFactory() {}
     
     public StatsJobDAO getJobDAO() throws DAOException {
         return new StatsJobData(HibernateDAOFactory.getInstance().getSessionFactory());

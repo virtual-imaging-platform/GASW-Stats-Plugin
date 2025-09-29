@@ -39,10 +39,6 @@ import fr.insalyon.creatis.gasw.dao.DAOException;
 
 import java.util.List;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
 public interface StatsJobDAO {
 
     public List<Job> getByFilenameAndExitCode(String fileName, GaswExitCode exitCode) throws DAOException;
