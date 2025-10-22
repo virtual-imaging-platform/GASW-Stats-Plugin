@@ -33,6 +33,7 @@
 package fr.insalyon.creatis.gasw.plugin.listener.stats;
 
 import fr.insalyon.creatis.gasw.GaswException;
+import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.GaswOutput;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.bean.JobMinorStatus;
@@ -44,13 +45,14 @@ import fr.insalyon.creatis.moteur.plugins.workflowsdb.bean.Stats;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.StatsDAO;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOException;
 import fr.insalyon.creatis.moteur.plugins.workflowsdb.dao.WorkflowsDBDAOFactory;
-
-import java.util.*;
-
+import net.xeoh.plugins.base.annotations.PluginImplementation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.xeoh.plugins.base.annotations.PluginImplementation;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 @PluginImplementation
 public class StatsListener implements ListenerPlugin {
@@ -156,7 +158,7 @@ public class StatsListener implements ListenerPlugin {
         switch (job.getStatus()) {
 
             case COMPLETED:
-                if (job.getExitCode() == 0) {
+                if (job.getExitCode() == GaswExitCode.SUCCESS.getExitCode()) {
                     stats.setCompleted(stats.getCompleted() + 1);
                     stats.setCompletedWaitingTime(stats.getCompletedWaitingTime()
                             + (job.getDownload().getTime() - job.getQueued().getTime()) / 1000);
@@ -211,10 +213,19 @@ public class StatsListener implements ListenerPlugin {
                 break;
 
             case ERROR:
+                // 2* : config errors
+                // 3* : output errors
+                // 4* : inputs errors
+                // 5* : execution errors
+                // 6* : shanoir token errors
 
-                switch (job.getExitCode()) {
+                Integer gaswExitCode = job.getExitCode();
+                if (gaswExitCode < 0) {gaswExitCode = - gaswExitCode; }
+                Integer firstDigit = Integer.parseInt(gaswExitCode.toString().substring(0,1));
+
+                switch (firstDigit) {
                     // Inputs Error
-                    case 1:
+                    case 2,4,6 -> {
                         stats.setFailedInput(stats.getFailedInput() + 1);
                         if (job.getQueued() != null) {
                             stats.setFailedInputWaitingTime(stats.getFailedInputWaitingTime()
@@ -232,10 +243,10 @@ public class StatsListener implements ListenerPlugin {
                             stats.setFailedInputOutputTime(stats.getFailedInputOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
-                        break;
+                    }
 
                     // Outputs Error
-                    case 2:
+                    case 3 -> {
                         stats.setFailedOutput(stats.getFailedOutput() + 1);
                         if (job.getQueued() != null) {
                             stats.setFailedOutputWaitingTime(stats.getFailedOutputWaitingTime()
@@ -253,10 +264,10 @@ public class StatsListener implements ListenerPlugin {
                             stats.setFailedOutputOutputTime(stats.getFailedOutputOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
-                        break;
+                    }
 
                     // Application Error
-                    case 6:
+                    case 5 -> {
                         stats.setFailedApplication(stats.getFailedApplication() + 1);
                         if (job.getQueued() != null) {
                             stats.setFailedApplicationWaitingTime(stats.getFailedApplicationWaitingTime()
@@ -274,6 +285,7 @@ public class StatsListener implements ListenerPlugin {
                             stats.setFailedApplicationOutputTime(stats.getFailedApplicationOutputTime()
                                     + (job.getEnd().getTime() - job.getUpload().getTime()) / 1000);
                         }
+                    }
                 }
         }
     }
